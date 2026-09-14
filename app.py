@@ -5,6 +5,8 @@ from src.ingestion.chunker import chunk_pages
 from src.embeddings.embedder import Embedder
 from src.vectorstore.faiss_store import FaissStore
 from src.generation.generator import generate_section
+from src.generation.generator import generate_full_paper
+
 
 st.set_page_config(page_title="Research Style Writer", layout="wide")
 st.title("Research Style Writer")
@@ -93,3 +95,11 @@ else:
                 )
             except Exception as e:
                 st.error(f"Generation failed: {e}")
+
+    if st.button("Generate All Sections"):
+        for section_name, result in generate_full_paper(topic, st.session_state.embedder, st.session_state.faiss_store, extra_instructions=extra_instructions):
+            st.subheader(section_name)
+            st.write(result["text"])
+            with st.expander(f"Sources used ({section_name})"):
+                for source, page in result["sources"]:
+                    st.write(f"- {source}, page {page}")
