@@ -13,6 +13,7 @@ def build_generation_prompt(
     retrieved_chunks: list[dict],
     style_notes: str,
     extra_instructions: str = "",
+    previous_sections_summary: str = "",
 ) -> str:
     
     context_text = "\n\n".join(
@@ -22,10 +23,17 @@ def build_generation_prompt(
 
     guidance = SECTION_GUIDANCE.get(section.lower(), "Write in a clear academic style.")
 
+    previous_context_block = (
+        f"\nContext from sections already written earlier in this same paper "
+        f"(stay consistent with these — don't contradict or repeat them):\n{previous_sections_summary}\n"
+        if previous_sections_summary else ""
+    )
+
     prompt = f"""You are an academic writing assistant. Write the "{section}" section
 for a research paper titled: "{topic}".
 
 Section guidance: {guidance}
+{previous_context_block}
 
 Match this writing style, based on analysis of reference papers:
 {style_notes}
