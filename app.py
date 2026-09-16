@@ -6,6 +6,8 @@ from src.embeddings.embedder import Embedder
 from src.vectorstore.faiss_store import FaissStore
 from src.generation.generator import generate_section
 from src.generation.generator import generate_full_paper
+from src.style.style_analyzer import analyze_style
+
 
 
 st.set_page_config(page_title="Research Style Writer", layout="wide")
@@ -52,9 +54,11 @@ if uploaded_files:
 
                 store = FaissStore()
                 store.build(chunks, vectors)
+                style_profile = analyze_style(chunks)
 
                 st.session_state.faiss_store = store
                 st.session_state.embedder = embedder
+                st.session_state.style_profile = style_profile 
 
             st.success(f"Processed {len(uploaded_files) - len(skipped)} papers into {len(chunks)} chunks.")
 
@@ -79,6 +83,7 @@ else:
                     section=section,
                     embedder=st.session_state.embedder,
                     faiss_store=st.session_state.faiss_store,
+                    style_profile=st.session_state.style_profile,
                     extra_instructions=extra_instructions,
                 )
                 st.subheader(f"Generated {section}")
@@ -97,7 +102,7 @@ else:
                 st.error(f"Generation failed: {e}")
 
     if st.button("Generate All Sections"):
-        for section_name, result in generate_full_paper(topic, st.session_state.embedder, st.session_state.faiss_store, extra_instructions=extra_instructions):
+        for section_name, result in generate_full_paper(topic, st.session_state.embedder, st.session_state.faiss_store,style_profile=st.session_state.style_profile,extra_instructions=extra_instructions):
             st.subheader(section_name)
             st.write(result["text"])
             with st.expander(f"Sources used ({section_name})"):
