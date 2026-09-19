@@ -2,11 +2,9 @@ import streamlit as st
 from src.config import settings
 from src.ingestion.pdf_loader import extract_text_from_uploads
 from src.ingestion.chunker import chunk_pages
-from src.embeddings.embedder import Embedder
-from src.vectorstore.faiss_store import FaissStore
-from src.generation.generator import generate_section
 from src.generation.generator import generate_full_paper
 from src.style.style_analyzer import analyze_style
+from src.generation.generator import generate_reviewed_section, generate_full_paper
 
 
 
@@ -47,25 +45,17 @@ if uploaded_files:
         if not pages:
             st.error("No text could be extracted from any uploaded file.")
         else:
-            with st.spinner("Chunking and embedding..."):
+            with st.spinner("Analyzing style..."):
                 chunks = chunk_pages(pages)
-                embedder = Embedder()
-                vectors = embedder.embed_documents([c["text"] for c in chunks])
-
-                store = FaissStore()
-                store.build(chunks, vectors)
                 style_profile = analyze_style(chunks)
+                st.session_state.style_profile = style_profile
 
-                st.session_state.faiss_store = store
-                st.session_state.embedder = embedder
-                st.session_state.style_profile = style_profile 
-
-            st.success(f"Processed {len(uploaded_files) - len(skipped)} papers into {len(chunks)} chunks.")
+            st.success(f"Processed {len(uploaded_files) - len(skipped)} papers, analyzed writing style.")
 
 # Generate a section
 st.header("2. Generate a section")
 
-if st.session_state.faiss_store is None:
+if "style_profile" not in st.session_state:
     st.info("Upload and process papers above before generating.")
 else:
     topic = st.text_input("Paper topic / title")
@@ -78,20 +68,25 @@ else:
     if st.button("Generate", disabled=not topic):
         with st.spinner("Generating..."):
             try:
-                result = generate_section(
-                    topic=topic,
-                    section=section,
-                    embedder=st.session_state.embedder,
-                    faiss_store=st.session_state.faiss_store,
-                    style_profile=st.session_state.style_profile,
-                    extra_instructions=extra_instructions,
-                )
+                result = generate_reviewed_section(
+                        topic=topic,
+                        section=section,
+                        style_profile=st.session_state.style_profile,
+                        extra_instructions=extra_instructions,
+                    )
                 st.subheader(f"Generated {section}")
                 st.write(result["text"])
 
+                if result["passed"]:
+                    st.caption(f"✅ Passed review after {result['attempts']} attempt(s)")
+                else:
+                    st.caption(f"⚠️ {result['attempts']} attempts made, unresolved issues:")
+                    for issue in result["remaining_issues"]:
+                        st.caption(f"- {issue}")
+
                 with st.expander("Sources used"):
-                    for source, page in result["sources"]:
-                        st.write(f"- {source}, page {page}")
+                    for src in result["sources"]:
+                        st.write(f"- [{src['title']}]({src['url']})")
 
                 st.download_button(
                     "Download as text",
@@ -102,9 +97,34 @@ else:
                 st.error(f"Generation failed: {e}")
 
     if st.button("Generate All Sections"):
-        for section_name, result in generate_full_paper(topic, st.session_state.embedder, st.session_state.faiss_store,style_profile=st.session_state.style_profile,extra_instructions=extra_instructions):
+        for section_name, result in generate_full_paper(topic,style_profile=st.session_state.style_profile,extra_instructions=extra_instructions):
             st.subheader(section_name)
             st.write(result["text"])
             with st.expander(f"Sources used ({section_name})"):
-                for source, page in result["sources"]:
-                    st.write(f"- {source}, page {page}")
+                for src in result["sources"]:
+                    st.write(f"- [{src['title']}]({src['url']})")
+
+
+            st.session_state.generated_sections.append((section_name, result["text"]))
+
+            if result["passed"]:
+                st.caption(f"✅ Passed review after {result['attempts']} attempt(s)")
+            else:
+                st.caption(f"⚠️ {result['attempts']} attempts made, unresolved issues:")
+                for issue in result["remaining_issues"]:
+                    st.caption(f"- {issue}")
+
+    if "generated_sections" not in st.session_state:
+                        st.session_state.generated_sections = []
+
+
+    from src.export.pdf_export import generate_pdf
+
+    if st.session_state.generated_sections:
+        pdf_bytes = generate_pdf(topic, st.session_state.generated_sections)
+        st.download_button(
+            "Export as PDF",
+            pdf_bytes,
+            file_name=f"{topic.lower().replace(' ', '_')}.pdf",
+            mime="application/pdf",
+        )
