@@ -17,6 +17,8 @@ class Settings:
     openrouter_api_key: str = os.getenv("OPENROUTER_API_KEY", "")
     openrouter_model: str = os.getenv("OPENROUTER_MODEL", "")
 
+    tavily_api_key: str = os.getenv("TAVILY_API_KEY", "")
+
     # ollama_model: str = os.getenv("OLLAMA_MODEL", "llama3.1:8b-instruct-q4_K_M")
 
     embedding_provider: str = os.getenv("EMBEDDING_PROVIDER", "local").lower()
