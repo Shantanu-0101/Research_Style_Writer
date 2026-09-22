@@ -1,7 +1,9 @@
-streamlit,
-python-dotenv,
-pymupdf, 
-langchain, 
-langchain-groq, 
-sentence-transformers, 
+streamlit
+python-dotenv
+pymupdf
+langchain
+langchain-groq
+sentence-transformers
 faiss-cpu
+Pillow
+google-genai
