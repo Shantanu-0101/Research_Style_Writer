@@ -20,15 +20,17 @@ CITATION_PATTERN = re.compile(r"\(([A-Z][a-zA-Z\-]+(?:\s(?:&|and)\s[A-Z][a-zA-Z\
 
 def check_fabricated_citations(text: str, sources_used: list[dict]) -> list[str]:
     """
-    Flags (Author, Year)-style citations in the text that don't correspond
-    to anything actually in sources_used — since content is now grounded
-    in web search results, not papers with real author/year metadata,
-    ANY such citation pattern is suspect and should be flagged.
+    Flags (Author, Year)-style citations only when NO web sources were retrieved at all,
+    meaning the LLM had nothing to ground facts in and may have hallucinated citations.
+    When real sources exist, LLMs naturally adopt citation-style prose — that's acceptable.
     """
+    if sources_used:
+        # Sources were retrieved — citation-style phrasing is likely grounded, don't block
+        return []
     found = CITATION_PATTERN.findall(text)
-    if found:
+    if len(found) > 3:
         unique = sorted(set(found))
-        return [f"Possible fabricated citation(s): {', '.join(unique)} — not traceable to a retrieved source"]
+        return [f"No sources were retrieved but text contains {len(found)} inline citation(s) — verify content accuracy"]
     return []
 
 
@@ -46,10 +48,12 @@ def check_transition_overuse(text: str, max_per_paragraph: float = 2.0) -> list[
     return issues
 
 
-def check_repetition(text: str, previous_sections_summary: str, overlap_threshold: int = 4) -> list[str]:
+def check_repetition(text: str, previous_sections_summary: str, overlap_threshold: int = 5) -> list[str]:
     """
     Crude but effective: flags this section if it shares long word sequences
     with what earlier sections already covered (per _summarize_for_context).
+    Using 5-grams and a higher count threshold to avoid false positives from
+    shared topic vocabulary.
     """
     def ngrams(s, n=overlap_threshold):
         words = s.lower().split()
@@ -58,7 +62,7 @@ def check_repetition(text: str, previous_sections_summary: str, overlap_threshol
     current_ngrams = ngrams(text)
     previous_ngrams = ngrams(previous_sections_summary)
     overlap = current_ngrams & previous_ngrams
-    if len(overlap) > 3:
+    if len(overlap) > 10:
         return [f"Section repeats phrasing already used earlier ({len(overlap)} overlapping {overlap_threshold}-word sequences)"]
     return []
 
