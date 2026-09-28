@@ -1,4 +1,16 @@
 import pymupdf as fitz
+from src.ingestion.vlm_extractor import extract_text_with_vlm
+
+def _looks_corrupted(text: str, threshold: float = 0.01) -> bool:
+    """
+    Flags a page as likely having broken font encoding if '?' shows up
+    far more often than real question marks would in normal prose.
+    """
+    if not text:
+        return False
+    return text.count("?") / len(text) > threshold
+
+
 
 def extract_text_from_pdf(file_bytes: bytes, filename: str) -> list[dict]:
     
@@ -10,7 +22,13 @@ def extract_text_from_pdf(file_bytes: bytes, filename: str) -> list[dict]:
 
     for page_num in range(len(doc)):
         text = doc[page_num].get_text("text").strip()
-        if text:  # skip blank/scanned pages with no extractable text
+
+        if _looks_corrupted(text):
+            print("VLM triggered")
+            text = extract_text_with_vlm(doc[page_num]).strip()
+
+
+        if text:
             pages.append({
                 "text": text,
                 "source": filename,
