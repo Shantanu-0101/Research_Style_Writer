@@ -1,4 +1,4 @@
-from src.ingestion.chunker import chunk_pages
+from src.core.ingestion.chunker import chunk_pages
 
 def test_chunk_pages_splits_long_text():
     pages = [{"text": "word " * 500, "source": "test.pdf", "page": 1}]
