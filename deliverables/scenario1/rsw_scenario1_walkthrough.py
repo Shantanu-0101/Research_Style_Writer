@@ -38,7 +38,7 @@ sys.path.insert(0, PROJECT_ROOT)
 
 
 # ╔═══════════════════════════════════════════════════════════════════════════╗
-# ║  STEP 1: Configuration & Environment Setup                              ║
+# ║  STEP 1: Configuration & Environment Setup                                ║
 # ╚═══════════════════════════════════════════════════════════════════════════╝
 
 print("=" * 70)
