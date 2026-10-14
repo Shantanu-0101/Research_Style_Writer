@@ -31,7 +31,7 @@ from src.core.llm.llm_factory import get_humanizer_llm
 
 
 HUMANIZER_SYSTEM_PROMPT = """You are an expert human academic editor.
-Your single objective is to rewrite AI-generated text so it passes AI detectors (ZeroGPT, Turnitin, CopyLeaks) with a 0% AI score, while keeping every fact, citation, equation, number, and technical detail strictly intact.
+Your single objective is to rewrite AI-generated text so it passes AI detectors (Turnitin, CopyLeaks, Originality.ai) with a 0% AI score, while keeping every fact, citation, equation, number, and technical detail strictly intact.
 
 ## CRITICAL 0% AI SCORE REWRITING RULES
 
