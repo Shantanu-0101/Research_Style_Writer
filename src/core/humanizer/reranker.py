@@ -5,7 +5,7 @@ Based on MASH (Multi-stage Alignment for Style Humanization) and AuthorMist rese
 Pipeline:
   1. Multi-Candidate Generation: Produces 2 distinct candidate rewrites using
      different prompt strategies designed specifically to evade cutting-edge
-     detectors like Originality.ai and ZeroGPT.
+     detectors like Originality.ai and Turnitin.
   2. Multi-Metric Scoring: Scores each candidate on:
      - Burstiness CV (Coefficient of Variation of sentence length)
      - Residual AI cliché / tell count
@@ -22,7 +22,7 @@ from src.core.humanizer.burstiness import _split_into_sentences, measure_burstin
 from src.core.humanizer.patterns import PATTERNS
 
 
-# ── AI Tell Regexes (High-Frequency Markers used by Originality.ai / ZeroGPT) ──
+# ── AI Tell Regexes (High-Frequency Markers used by Originality.ai / Turnitin) ──
 AI_TELL_PATTERNS = [
     r"\bfurthermore\b",
     r"\bmoreover\b",
@@ -58,7 +58,7 @@ AI_TELL_PATTERNS = [
 COMPILED_AI_TELLS = [re.compile(pat, re.IGNORECASE) for pat in AI_TELL_PATTERNS]
 
 
-PROMPT_CANDIDATE_A = """You are an elite academic researcher rewriting text to pass strict AI detectors (Originality.ai and ZeroGPT) with 100% human authenticity.
+PROMPT_CANDIDATE_A = """You are an elite academic researcher rewriting text to pass strict AI detectors (Originality.ai and Turnitin) with 100% human authenticity.
 
 Rewrite the text using an EMPIRICAL RESEARCHER VOICE with authentic structural asymmetry:
 1. EMPIRICAL HUMAN VOICE:
@@ -79,7 +79,7 @@ TEXT TO REWRITE:
 """
 
 
-PROMPT_CANDIDATE_B = """You are an expert academic editor rewriting text to evade neural text detectors (Originality.ai and ZeroGPT).
+PROMPT_CANDIDATE_B = """You are an expert academic editor rewriting text to evade neural text detectors (Originality.ai and Turnitin).
 
 Rewrite the text using ASYMMETRIC RHYTHM AND CONVERSATIONAL ACADEMIC PHRASING:
 1. VARY SENTENCE RHYTHM DRASTICALLY:
@@ -99,7 +99,7 @@ TEXT TO REWRITE:
 """
 
 
-PROMPT_CANDIDATE_C = """You are a senior research scientist rewriting text to evade AI detection systems (Turnitin, Originality.ai, ZeroGPT).
+PROMPT_CANDIDATE_C = """You are a senior research scientist rewriting text to evade AI detection systems (Turnitin, Originality.ai, CopyLeaks).
 
 Rewrite the text using ANALYTICAL RESEARCH VOICE with deliberate structural imperfection:
 1. ANALYTICAL VOICE:
