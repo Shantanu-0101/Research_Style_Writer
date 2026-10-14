@@ -53,7 +53,7 @@ HEDGES = [
     "as a tentative observation",
 ]
 
-# ── Self-corrections — quick editorial fixes mid-sentence ─────────────────────
+# ── Self-corrections — quick editorial fixes mid-sentence
 SELF_CORRECTIONS = [
     " (or rather, across all evaluated configurations)",
     " (more precisely, on the held-out test set)",
