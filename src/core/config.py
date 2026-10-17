@@ -27,8 +27,6 @@ class Settings:
 
     tavily_api_key: str = os.getenv("TAVILY_API_KEY", "")
     unsplash_api_key: str = os.getenv("UNSPLASH_API_KEY", "")
-    zerogpt_api_key: str = os.getenv("ZEROGPT_API_KEY", "")
-
     embedding_provider: str = os.getenv("EMBEDDING_PROVIDER", "local").lower()
     embedding_model_name: str = os.getenv(
         "EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2"
