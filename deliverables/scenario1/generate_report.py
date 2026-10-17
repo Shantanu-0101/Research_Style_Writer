@@ -387,7 +387,7 @@ def build_architecture_diagram(pdf: ReportPDF):
 
     pdf.draw_arrow_down(left + full_w / 2, y + row_h, y + row_h + gap)
 
-    # Layer 6: External APIs (3 boxes — no ZeroGPT)
+    # Layer 6: External APIs
     y += row_h + gap
     col_w6 = full_w / 3 - 2
     pdf.draw_box(left, y, col_w6, row_h, "Gemini / Grok / Groq",
